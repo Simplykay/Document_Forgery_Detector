@@ -3,10 +3,24 @@ import cv2
 from pdf2image import convert_from_bytes
 from docx import Document
 import io
+import os
+import shutil
 from PIL import Image
 
 class DocumentProcessor:
     """Class to handle conversion of various document formats to images for analysis."""
+
+    def _get_poppler_path(self):
+        """Attempts to locate the poppler bin directory on Windows."""
+        if os.name != 'nt':
+            return None
+            
+        # 1. Check if pdftoppm is in PATH and get its directory
+        pdftoppm_path = shutil.which("pdftoppm")
+        if pdftoppm_path:
+            return os.path.dirname(pdftoppm_path)
+            
+        return None
 
     def process_pdf(self, file_bytes):
         """
@@ -19,9 +33,17 @@ class DocumentProcessor:
             numpy.ndarray: The converted image in BGR format (OpenCV compatible).
         """
         try:
+            # Detect poppler path on Windows
+            poppler_path = self._get_poppler_path()
+            
             # Convert PDF bytes to a list of PIL images
-            # Using 300 DPI for high quality as requested
-            pages = convert_from_bytes(file_bytes, dpi=300, first_page=1, last_page=1)
+            pages = convert_from_bytes(
+                file_bytes, 
+                dpi=300, 
+                first_page=1, 
+                last_page=1,
+                poppler_path=poppler_path
+            )
             
             if not pages:
                 raise ValueError("No pages found in PDF.")
