@@ -18,8 +18,25 @@ class DocumentProcessor:
         # 1. Check if pdftoppm is in PATH and get its directory
         pdftoppm_path = shutil.which("pdftoppm")
         if pdftoppm_path:
-            return os.path.dirname(pdftoppm_path)
+            path = os.path.dirname(pdftoppm_path)
+            print(f"[DEBUG] Found Poppler in PATH: {path}")
+            return path
             
+        # 2. Check common installation paths
+        common_paths = [
+            r"C:\Program Files\poppler-0.68.0\bin",
+            r"C:\Program Files (x86)\poppler-0.68.0\bin",
+            r"C:\poppler\bin",
+            # Add MiKTeX path discovered in diagnostics
+            os.path.expandvars(r"%LOCALAPPDATA%\Programs\MiKTeX\miktex\bin\x64")
+        ]
+        
+        for path in common_paths:
+            if os.path.exists(os.path.join(path, "pdftoppm.exe")):
+                print(f"[DEBUG] Found Poppler in common path: {path}")
+                return path
+            
+        print("[DEBUG] Poppler not found in PATH or common locations.")
         return None
 
     def process_pdf(self, file_bytes):
