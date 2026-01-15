@@ -2,7 +2,12 @@ import streamlit as st
 import cv2
 import numpy as np
 import os
+import sys
 from PIL import Image
+
+# Add the project root to sys.path
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+
 from src.analyzer import ForgeryDetector
 
 # Page configuration
