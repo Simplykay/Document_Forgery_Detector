@@ -4,3 +4,6 @@ numpy
 imutils
 scikit-image
 Pillow
+pdf2image
+python-docx
+pypdf
