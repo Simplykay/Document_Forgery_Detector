@@ -24,11 +24,20 @@ class DocumentProcessor:
             
         # 2. Check common installation paths
         common_paths = [
+            # Scoop installation
+            os.path.expandvars(r"%USERPROFILE%\scoop\apps\poppler\current\Library\bin"),
+            # Manual installation (oschwartz10612 release)
+            r"C:\poppler\Library\bin",
+            r"C:\Program Files\poppler\Library\bin",
+            # Older versions
             r"C:\Program Files\poppler-0.68.0\bin",
             r"C:\Program Files (x86)\poppler-0.68.0\bin",
             r"C:\poppler\bin",
-            # Add MiKTeX path discovered in diagnostics
-            os.path.expandvars(r"%LOCALAPPDATA%\Programs\MiKTeX\miktex\bin\x64")
+            # MiKTeX path
+            os.path.expandvars(r"%LOCALAPPDATA%\Programs\MiKTeX\miktex\bin\x64"),
+            # User local installations
+            os.path.expandvars(r"%USERPROFILE%\poppler\Library\bin"),
+            os.path.expandvars(r"%USERPROFILE%\Downloads\poppler\Library\bin")
         ]
         
         for path in common_paths:
@@ -77,7 +86,15 @@ class DocumentProcessor:
             return numpy_image
 
         except Exception as e:
-            raise RuntimeError(f"Failed to process PDF: {str(e)}")
+            error_msg = str(e)
+            if "poppler" in error_msg.lower() or "page count" in error_msg.lower():
+                raise RuntimeError(
+                    f"Failed to process PDF: {error_msg}\n\n"
+                    "Poppler utilities are required for PDF processing.\n"
+                    "Please see POPPLER_SETUP.md for installation instructions.\n"
+                    "Quick fix: Install via Scoop with 'scoop install poppler'"
+                )
+            raise RuntimeError(f"Failed to process PDF: {error_msg}")
 
     def process_word(self, file_bytes):
         """
